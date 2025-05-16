@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pincode Lookup</title>
+  <style>
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(270deg, #6a11cb, #2575fc, #6a11cb);
+      background-size: 600% 600%;
+      animation: gradientBG 15s ease infinite;
+      color: #fff;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 40px 50px;
+      box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      width: 90%;
+      max-width: 700px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 25px;
+      font-size: 2.8rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    input[type="text"] {
+      padding: 14px 20px;
+      width: 65%;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 14px 30px;
+      font-size: 18px;
+      margin-left: 15px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(45deg, #0072ff, #00c6ff);
+      transform: scale(1.05);
+    }
+    #result {
+      margin-top: 35px;
+      font-size: 18px;
+      min-height: 60px;
+    }
+
+    /* Loader animation: fading dots */
+    .loader {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .loader div {
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+    .loader div:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .loader div:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.6; }
+      50% { transform: scale(1.5); opacity: 1; }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffffcc;
+      color: #222;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+    th, td {
+      padding: 14px 20px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      font-weight: 600;
+    }
+    th {
+      background-color: #0072ff;
+      color: white;
+    }
+    tr:hover {
+      background-color: #cce4ff;
+    }
+
+    @media (max-width: 600px) {
+      input[type="text"], button {
+        width: 100%;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📍 Pincode Lookup</h1>
+    <input type="text" id="pincode" placeholder="Enter Pincode" autocomplete="off" />
+    <button onclick="searchPincode()">Search</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    async function searchPincode() {
+      const pin = document.getElementById("pincode").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!pin) {
+        resultDiv.innerHTML = "⚠️ Please enter a pincode.";
+        return;
+      }
+
+      // Show loader animation
+      resultDiv.innerHTML = `
+        <div class="loader">
+          <div></div><div></div><div></div>
+        </div>
+      `;
+
+      const url = `https://script.google.com/macros/s/AKfycbwfzjyXDk_55_0Msltd3ckaCbRE-MB7mZNPItN5jddlnX6ATzlpBC10QnlJrt4wrHjNmw/exec?pin=${pin}`;
+
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+
+        try {
+          const data = JSON.parse(text);
+          resultDiv.innerHTML = `
+            <table>
+              <tr>
+                <th>Area</th>
+                <th>Region</th>
+                <th>SVC Name</th>
+                <th>Mobile No </th>
+                <th> Remarks </th>
+              </tr>
+              <tr>
+                <td>${data.area}</td>
+                <td>${data.region}</td>
+                <td>${data.svcName}</td>
+                <td>${data.remarks}</td>
+                <td>${data.mobile}</td>
+              </tr>
+            </table>
+          `;
+        } catch {
+          resultDiv.innerHTML = `<h3>📌 ${text}</h3>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = "❌ Error fetching data. Try again later.";
+      }
+    }
+  </script>
+</body>
+</html>
