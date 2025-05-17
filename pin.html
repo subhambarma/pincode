@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pin Code Distance Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 40px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      color: #00fff2;
+    }
+
+    input {
+      width: 80%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: #00fff2;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #00c2b0;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #00ff99;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 13px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📍 Pin Code Distance Calculator</h1>
+    <input type="text" id="pin1" placeholder="Enter Pin Code 1">
+    <input type="text" id="pin2" placeholder="Enter Pin Code 2"><br>
+    <button onclick="calculateDistance()">Calculate</button>
+    <div id="result"></div>
+    <footer>Made with ❤️ by Subham Barma</footer>
+  </div>
+
+  <script>
+    const apiKey = "373637226f284a179a0e3b36e9775568"; // Replace this with your actual API key
+
+    async function getCoordinates(pin) {
+      const url = `https://api.opencagedata.com/geocode/v1/json?q=${pin}&key=${apiKey}&countrycode=in&limit=1`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.results.length > 0) {
+        return data.results[0].geometry;
+      } else {
+        throw new Error("Invalid pin code: " + pin);
+      }
+    }
+
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Earth radius in KM
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    async function calculateDistance() {
+      const pin1 = document.getElementById("pin1").value.trim();
+      const pin2 = document.getElementById("pin2").value.trim();
+      const result = document.getElementById("result");
+
+      if (!pin1 || !pin2) {
+        result.textContent = "⚠️ Please enter both pin codes.";
+        return;
+      }
+
+      try {
+        const loc1 = await getCoordinates(pin1);
+        const loc2 = await getCoordinates(pin2);
+        const dist = haversine(loc1.lat, loc1.lng, loc2.lat, loc2.lng);
+        result.textContent = `📍 Distance between ${pin1} and ${pin2} is approx. ${dist.toFixed(2)} km.`;
+      } catch (err) {
+        result.textContent = "❌ Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
